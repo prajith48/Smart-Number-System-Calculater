@@ -1,55 +1,71 @@
 def anytodecimal(num):
-    # Ask the user for the base of the input number (e.g., 2 if the number is in binary)
     ibase = int(input("Enter input base:\n"))
+    
+    # Convert num to string to handle decimal parts safely
+    num_str = str(num)
 
-    # If input is already in base 10, no need to convert — just go to output stage
-    if ibase == 10:
-        decimaltoany(num)
+    # Split integer and fractional part
+    if '.' in num_str:
+        intpart_str, frac_str = num_str.split('.')
     else:
-        # For other bases (like binary or octal), we convert to decimal first
+        intpart_str = num_str
+        frac_str = ''
 
-        # Start from the highest digit (leftmost), so get its position (power of base)
-        j = len(str(num)) - 1
-        decimal = 0
+    # Convert integer part to decimal
+    decimal = 0
+    j = len(intpart_str) - 1
+    for i in intpart_str:
+        decimal += (ibase ** j) * int(i)
+        j -= 1
 
-        # Go through each digit and apply the formula: digit × base^position
-        for i in str(num):
-            decimal += (ibase ** j) * int(i)  # Add value of each digit according to its weight
-            j -= 1  # Move to next lower power
+    # Convert fractional part to decimal
+    k = -1
+    for i in frac_str:
+        decimal += (ibase ** k) * int(i)
+        k -= 1
 
-        # Now the number is converted to base 10 — pass it to the next function
-        decimaltoany(decimal)
+    decimaltoany(decimal)
 
 
 def decimaltoany(decimal):
-    # Ask the user for the base to which the number should be converted
     tbase = int(input("Enter target base:\n"))
-
-    # If target base is 10, we don’t need to convert
+    
     if tbase == 10:
         print(f"{decimal} is the requested number")
     else:
-        # Start converting from decimal to the target base (like binary or octal)
-        r = decimal  # just using a temporary variable
+        # Separate integer and fractional parts
+        r = int(decimal)
+        frac = decimal - r
 
-        arr = []  # this will store remainders (digits) in reverse order
-        out = ""  # final output string
-
-        # Divide the number by the target base repeatedly
+        # Convert integer part using remainders
+        arr = []
+        if r == 0:
+            arr.append('0')
         while r != 0:
-            arr.append(r % tbase)  # store remainder (this is the current digit)
-            r = int(r / tbase)     # update the number by integer division
+            arr.append(str(r % tbase))
+            r = int(r / tbase)
+        intpart = "".join(reversed(arr))
 
-        # Digits were collected from least significant to most significant
-        # So we reverse them to get the correct order
-        for i in arr:
-            out += str(i)
-        out = "".join(reversed(out))  # now the digits are in correct order
+        # Convert fractional part using multiplication
+        fracpart = ''
+        count = 0
+        precision = int(input("Enter max digits after decimal: "))
+        while frac != 0 and count < precision:
+            frac *= tbase
+            digit = int(frac)
+            fracpart += str(digit)
+            frac -= digit
+            count += 1
 
-    # Print the final converted number
-    print(f"{out} is the requested number!")
+        # Combine both parts
+        if fracpart:
+            out = f"{intpart}.{fracpart}"
+        else:
+            out = intpart
+
+        print(f"{out} is the requested number!")
 
 
-# Start by asking the user for the number they want to convert
-num = int(input("Enter number:\n"))
+# Use input as float to accept decimal numbers
+num = input("Enter number:\n")  # using string to avoid float error
 anytodecimal(num)
